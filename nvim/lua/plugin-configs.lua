@@ -1,5 +1,4 @@
--- lua/plugin-configs.lua=
-
+-- lua/plugin-configs.lua
 -- Configuration nvim-tree (Explorateur de fichiers)
 require("nvim-tree").setup({
     sort_by = "case_sensitive",
@@ -85,13 +84,13 @@ require('mason').setup({})
 require('mason-lspconfig').setup({
     ensure_installed = {
         'intelephense', -- PHP
-        'solargraph', -- Ruby
-        'gopls',    -- Go
-        'tsserver', -- TypeScript/JavaScript
-        'tailwindcss', -- Tailwind CSS
-        'html',     -- HTML
-        'cssls',    -- CSS
-        'jsonls',   -- JSON
+        'solargraph',   -- Ruby
+        'gopls',        -- Go
+        'tsserver',     -- TypeScript/JavaScript
+        'tailwindcss',  -- Tailwind CSS
+        'html',         -- HTML
+        'cssls',        -- CSS
+        'jsonls',       -- JSON
     },
     handlers = {
         lsp_zero.default_setup,
@@ -168,25 +167,205 @@ cmp.setup({
     },
 })
 
--- Configuration Treesitter
+-- ===============================================
+-- CONFIGURATION TREESITTER AMÉLIORÉE
+-- ===============================================
 require('nvim-treesitter.configs').setup {
+    -- Langages à installer automatiquement
     ensure_installed = {
-        "php", "ruby", "go", "javascript", "typescript",
-        "html", "css", "json", "yaml", "lua", "vim"
+        -- Langages web
+        "html", "css", "scss", "javascript", "typescript", "tsx", "vue",
+        -- Langages backend
+        "php", "ruby", "go", "python", "rust", "java", "c", "cpp",
+        -- Configuration et markup
+        "json", "yaml", "toml", "xml", "sql",
+        -- Vim et Lua
+        "lua", "vim", "vimdoc",
+        -- Documentation
+        "markdown", "markdown_inline",
+        -- Shell
+        "bash", "fish",
+        -- Autres
+        "regex", "dockerfile", "gitignore", "gitcommit"
     },
+
+    -- Installation automatique des parsers manquants
     sync_install = false,
     auto_install = true,
+
+    -- Configuration de la coloration syntaxique
     highlight = {
         enable = true,
+        -- Désactiver vim regex highlighting pour de meilleures performances
         additional_vim_regex_highlighting = false,
+        -- Langages pour lesquels désactiver treesitter si nécessaire
+        disable = function(lang, buf)
+            local max_filesize = 100 * 1024 -- 100 KB
+            local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+            if ok and stats and stats.size > max_filesize then
+                return true
+            end
+        end,
     },
+
+    -- Indentation intelligente
     indent = {
-        enable = true
+        enable = true,
+        -- Certains langages peuvent avoir des problèmes d'indentation
+        disable = { "python", "yaml" },
+    },
+
+    -- Sélection incrémentale basée sur la syntaxe
+    incremental_selection = {
+        enable = true,
+        keymaps = {
+            init_selection = "gnn",
+            node_incremental = "grn",
+            scope_incremental = "grc",
+            node_decremental = "grm",
+        },
+    },
+
+    -- Navigation dans le code basée sur la syntaxe
+    textobjects = {
+        select = {
+            enable = true,
+            lookahead = true,
+            keymaps = {
+                ["af"] = "@function.outer",
+                ["if"] = "@function.inner",
+                ["ac"] = "@class.outer",
+                ["ic"] = "@class.inner",
+                ["aa"] = "@parameter.outer",
+                ["ia"] = "@parameter.inner",
+            },
+        },
+        move = {
+            enable = true,
+            set_jumps = true,
+            goto_next_start = {
+                ["]m"] = "@function.outer",
+                ["]]"] = "@class.outer",
+            },
+            goto_next_end = {
+                ["]M"] = "@function.outer",
+                ["]["] = "@class.outer",
+            },
+            goto_previous_start = {
+                ["[m"] = "@function.outer",
+                ["[["] = "@class.outer",
+            },
+            goto_previous_end = {
+                ["[M"] = "@function.outer",
+                ["[]"] = "@class.outer",
+            },
+        },
+    },
+
+    -- Mise en évidence des références
+    refactor = {
+        highlight_definitions = {
+            enable = true,
+            clear_on_cursor_move = true,
+        },
+        highlight_current_scope = { enable = true },
+    },
+
+    -- Rainbow parentheses
+    rainbow = {
+        enable = true,
+        extended_mode = true,
+        max_file_lines = nil,
+    },
+
+    -- Configuration pour différents types de fichiers
+    context_commentstring = {
+        enable = true,
+        enable_autocmd = false,
     },
 }
 
--- Configuration Gitsigns
-require('gitsigns').setup()
+-- ===============================================
+-- CONFIGURATION COLORSCHEME OPTIMISÉE
+-- ===============================================
+
+-- S'assurer que les couleurs 24-bit sont activées
+if vim.fn.has("termguicolors") == 1 then
+    vim.opt.termguicolors = true
+end
+
+-- Configuration du thème (Tokyo Night est déjà configuré dans lualine)
+-- Vous pouvez aussi essayer d'autres thèmes populaires :
+vim.cmd([[
+    " Activer la coloration syntaxique
+    syntax enable
+
+    " Configuration pour de meilleures couleurs
+    set background=dark
+
+    " Thème (décommentez celui que vous préférez)
+    " colorscheme tokyonight-night
+    " colorscheme catppuccin-mocha
+    " colorscheme gruvbox
+    " colorscheme onedark
+]])
+
+-- ===============================================
+-- AMÉLIORATIONS SUPPLÉMENTAIRES
+-- ===============================================
+
+-- Configuration pour la mise en évidence des mots sous le curseur
+vim.api.nvim_create_autocmd("CursorHold", {
+    callback = function()
+        local opts = {
+            focusable = false,
+            close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+            border = 'rounded',
+            source = 'always',
+            prefix = ' ',
+            scope = 'cursor',
+        }
+        vim.diagnostic.open_float(nil, opts)
+    end
+})
+
+-- Configuration Gitsigns avec plus d'options
+require('gitsigns').setup({
+    signs = {
+        add          = { text = '│' },
+        change       = { text = '│' },
+        delete       = { text = '_' },
+        topdelete    = { text = '‾' },
+        changedelete = { text = '~' },
+        untracked    = { text = '┆' },
+    },
+    signcolumn = true,
+    numhl = false,
+    linehl = false,
+    word_diff = false,
+    watch_gitdir = {
+        follow_files = true
+    },
+    attach_to_untracked = true,
+    current_line_blame = false,
+    current_line_blame_opts = {
+        virt_text = true,
+        virt_text_pos = 'eol',
+        delay = 1000,
+        ignore_whitespace = false,
+    },
+    sign_priority = 6,
+    update_debounce = 100,
+    status_formatter = nil,
+    max_file_length = 40000,
+    preview_config = {
+        border = 'single',
+        style = 'minimal',
+        relative = 'cursor',
+        row = 0,
+        col = 1
+    },
+})
 
 -- Configuration autopairs
 require("nvim-autopairs").setup {}
@@ -194,8 +373,33 @@ require("nvim-autopairs").setup {}
 -- Configuration Comment
 require('Comment').setup()
 
--- Configuration indent-blankline
-require("ibl").setup()
+-- Configuration indent-blankline avec de meilleures couleurs
+require("ibl").setup({
+    indent = {
+        char = "│",
+        tab_char = "│",
+    },
+    scope = {
+        enabled = true,
+        show_start = true,
+        show_end = true,
+        highlight = { "Function", "Label" },
+    },
+    exclude = {
+        filetypes = {
+            "help",
+            "alpha",
+            "dashboard",
+            "neo-tree",
+            "Trouble",
+            "lazy",
+            "mason",
+            "notify",
+            "toggleterm",
+            "lazyterm",
+        },
+    },
+})
 
 -- Configuration bufferline
 require("bufferline").setup {
@@ -205,7 +409,14 @@ require("bufferline").setup {
         diagnostics = "nvim_lsp",
         diagnostics_indicator = function(count, level, diagnostics_dict, context)
             return "(" .. count .. ")"
-        end
+        end,
+        color_icons = true,
+        show_buffer_icons = true,
+        show_buffer_close_icons = true,
+        show_close_icon = true,
+        show_tab_indicators = true,
+        enforce_regular_tabs = false,
+        always_show_bufferline = true,
     }
 }
 
