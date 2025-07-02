@@ -1,5 +1,6 @@
 -- lua/keymaps.lua
 
+vim = vim or require('vim')
 local keymap = vim.keymap.set
 local opts = { silent = true }
 
@@ -55,6 +56,39 @@ keymap("n", "<leader>d", vim.diagnostic.open_float, opts)
 keymap("n", "[d", vim.diagnostic.goto_prev, opts)
 keymap("n", "]d", vim.diagnostic.goto_next, opts)
 keymap("n", "<leader>dl", vim.diagnostic.setloclist, opts)
+
+-- Raccourcis principaux pour les terminaux
+keymap("n", "<C-\\>", ":ToggleTerm<CR>", opts) -- Terminal principal
+keymap("n", "<leader>tf", ":ToggleTerm direction=float<CR>", opts) -- Terminal flottant
+keymap("n", "<leader>th", ":ToggleTerm direction=horizontal size=15<CR>", opts) -- Terminal horizontal
+keymap("n", "<leader>tv", ":ToggleTerm direction=vertical size=50<CR>", opts) -- Terminal vertical
+
+-- Terminal intégré basique (pour compatibilité)
+keymap("n", "<leader>t", ":terminal<CR>", opts)
+keymap("t", "<Esc>", "<C-\\><C-n>", opts) 
+
+-- Navigation dans le terminal
+keymap("t", "<C-h>", "<C-\\><C-n><C-w>h", opts)
+keymap("t", "<C-j>", "<C-\\><C-n><C-w>j", opts)
+keymap("t", "<C-k>", "<C-\\><C-n><C-w>k", opts)
+keymap("t", "<C-l>", "<C-\\><C-n><C-w>l", opts)
+
+-- ===============================================
+-- DEBUG (DAP - Debug Adapter Protocol)
+-- ===============================================
+
+-- Contrôles de débogage
+keymap("n", "<leader>db", ":lua require'dap'.toggle_breakpoint()<CR>", opts) -- Toggle breakpoint
+keymap("n", "<leader>dB", ":lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>", opts) -- Conditional breakpoint
+keymap("n", "<leader>dc", ":lua require'dap'.continue()<CR>", opts) -- Continue
+keymap("n", "<leader>di", ":lua require'dap'.step_into()<CR>", opts) -- Step into
+keymap("n", "<leader>do", ":lua require'dap'.step_over()<CR>", opts) -- Step over
+keymap("n", "<leader>dO", ":lua require'dap'.step_out()<CR>", opts) -- Step out
+keymap("n", "<leader>dr", ":lua require'dap'.repl.toggle()<CR>", opts) -- Toggle REPL
+keymap("n", "<leader>dl", ":lua require'dap'.run_last()<CR>", opts) -- Run last
+keymap("n", "<leader>du", ":lua require'dapui'.toggle()<CR>", opts) -- Toggle UI
+keymap("n", "<leader>dt", ":lua require'dap'.terminate()<CR>", opts) -- Terminate
+keymap("n", "<leader>dh", ":lua require'dap.ui.widgets'.hover()<CR>", opts) -- Hover variables
 
 -- Raccourcis spécifiques aux langages
 
