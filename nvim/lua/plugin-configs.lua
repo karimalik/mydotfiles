@@ -1,5 +1,7 @@
 -- lua/plugin-configs.lua
 -- Configuration nvim-tree (Explorateur de fichiers)
+vim = vim or require('vim')
+
 require("nvim-tree").setup({
     sort_by = "case_sensitive",
     view = {
@@ -83,14 +85,14 @@ end)
 require('mason').setup({})
 require('mason-lspconfig').setup({
     ensure_installed = {
-        'intelephense', -- PHP
-        'solargraph',   -- Ruby
-        'gopls',        -- Go
-        'tsserver',     -- TypeScript/JavaScript
-        'tailwindcss',  -- Tailwind CSS
-        'html',         -- HTML
-        'cssls',        -- CSS
-        'jsonls',       -- JSON
+        'intelephense',               -- PHP
+        --'solargraph',                 -- Ruby
+        'gopls',                      -- Go
+        'ts_ls',                      -- TypeScript/JavaScript
+        'tailwindcss',                -- Tailwind CSS
+        'html',                       -- HTML
+        'cssls',                      -- CSS
+        'jsonls',                     -- JSON
     },
     handlers = {
         lsp_zero.default_setup,
@@ -110,8 +112,8 @@ require('mason-lspconfig').setup({
         end,
 
         -- Configuration pour TypeScript
-        tsserver = function()
-            require('lspconfig').tsserver.setup({
+        ts_ls = function()
+            require('lspconfig').ts_ls.setup({ 
                 settings = {
                     typescript = {
                         inlayHints = {
@@ -136,6 +138,20 @@ require('mason-lspconfig').setup({
                         }
                     }
                 }
+            })
+        end,
+
+        -- Configuration lsp solargraph
+        solargraph = function()
+            require('lspconfig').solargraph.setup({
+                settings = {
+                    solargraph = {
+                        diagnostics = true,
+                        completion = true,
+                        hover = true,
+                        formatting = true,
+                    }
+                },
             })
         end,
     }
