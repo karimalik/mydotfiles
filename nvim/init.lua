@@ -1,4 +1,4 @@
--- init.lua - Configuration principale Neovim
+-- init.lua - Configuration principale Neovim avec Terminal et Debug
 -- %LOCALAPPDATA%\nvim\init.lua
 
 -- Options de base
@@ -34,6 +34,19 @@ vim.api.nvim_create_autocmd({"FocusLost", "BufLeave", "BufWinLeave", "InsertLeav
   pattern = "*",
   command = "silent! wa"
 })
+
+-- Commande personnalisée pour vider le log de Mason
+vim.api.nvim_create_user_command("MasonClearLog", function()
+  local log_path = vim.fn.stdpath("data") .. "/mason/log/mason.log"
+  local f = io.open(log_path, "w")
+  if f then
+    f:write("") 
+    f:close()
+    print("✅ Log Mason vidé")
+  else
+    print("❌ Impossible d'accéder au fichier de log Mason.")
+  end
+end, {})
 
 -- Leader key
 vim.g.mapleader = ' '
@@ -138,16 +151,56 @@ require('packer').startup(function(use)
   -- Go support
   use 'fatih/vim-go'
 
+  -- ===============================================
+  -- PLUGINS POUR TERMINAL ET DEBUG
+  -- ===============================================
+  
+  -- Terminal amélioré
+  use {
+    'akinsho/toggleterm.nvim',
+    tag = '*',
+    config = function()
+      require("toggleterm").setup()
+    end
+  }
+  
+  -- Debug Adapter Protocol
+  use 'mfussenegger/nvim-dap'
+  use 'nvim-neotest/nvim-nio'
+  use 'rcarriga/nvim-dap-ui'
+  use 'theHamsta/nvim-dap-virtual-text'
+  use 'nvim-telescope/telescope-dap.nvim'
+  
+  -- Debug pour différents langages
+  use 'leoluz/nvim-dap-go'          -- Go debugging
+  use 'mfussenegger/nvim-dap-python' -- Python debugging
+  
+  -- Gestion des erreurs et diagnostics
+  use {
+    "folke/trouble.nvim",
+    requires = "nvim-tree/nvim-web-devicons",
+    config = function()
+      require("trouble").setup {}
+    end
+  }
+  
+  -- Git UI dans le terminal
+  use 'kdheepak/lazygit.nvim'
+
   if packer_bootstrap then
     require('packer').sync()
   end
 end)
 
--- Configuration des plugins
+-- Configuration des plugins 
 require('plugin-configs')
 
--- Keymaps
+-- Configuration pour terminal et debug
+require('terminal-debug-config')
+
+-- Keymaps existants
 require('keymaps')
 
 -- Thème
 vim.cmd[[colorscheme tokyonight-night]]
+
